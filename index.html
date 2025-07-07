@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Casino - Gambling Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .casino-container {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .casino-header {
+            margin-bottom: 30px;
+        }
+
+        .casino-title {
+            font-size: 2.5em;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .disclaimer {
+            background: rgba(255, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .balance-display {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #333;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .promo-section {
+            margin-bottom: 30px;
+        }
+
+        .promo-input {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            width: 200px;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .game-section {
+            margin-bottom: 30px;
+        }
+
+        .game-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .bet-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .bet-input {
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            width: 120px;
+            text-align: center;
+        }
+
+        .slot-machine {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .slot-reel {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: #333;
+            border: 3px solid #ffd700;
+            animation: spin 0.5s ease-in-out;
+        }
+
+        @keyframes spin {
+            0% { transform: rotateY(0deg); }
+            50% { transform: rotateY(180deg); }
+            100% { transform: rotateY(0deg); }
+        }
+
+        .result-message {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            min-height: 30px;
+        }
+
+        .win-message {
+            color: #4ecdc4;
+            animation: pulse 1s ease-in-out;
+        }
+
+        .lose-message {
+            color: #ff6b6b;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .history {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-title {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .history-item {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .promo-message {
+            background: rgba(78, 205, 196, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="casino-container">
+        <div class="casino-header">
+            <h1 class="casino-title">🎰 Virtual Casino 🎰</h1>
+            <div class="disclaimer">
+                <strong>⚠️ NUR SIMULATION - KEIN ECHTGELD ⚠️</strong><br>
+                Dies ist eine reine Spielsimulation zu Unterhaltungszwecken
+            </div>
+        </div>
+
+        <div class="balance-display">
+            💰 Guthaben: €<span id="balance">10</span>
+        </div>
+
+        <div class="promo-section">
+            <h3>Promo Code eingeben:</h3>
+            <div class="promo-input">
+                <input type="text" id="promoCode" placeholder="Promo Code eingeben" maxlength="10">
+                <button class="btn btn-secondary" onclick="applyPromoCode()">Einlösen</button>
+            </div>
+            <div id="promoMessage"></div>
+        </div>
+
+        <div class="game-section">
+            <h2 class="game-title">🎲 Slot Machine 🎲</h2>
+            
+            <div class="bet-controls">
+                <label for="betAmount">Einsatz: €</label>
+                <input type="number" id="betAmount" class="bet-input" min="1" max="1000" value="1">
+                <button class="btn btn-primary" onclick="spin()">SPIN!</button>
+            </div>
+
+            <div class="slot-machine">
+                <div class="slot-reel" id="reel1">🍒</div>
+                <div class="slot-reel" id="reel2">🍋</div>
+                <div class="slot-reel" id="reel3">🍇</div>
+            </div>
+
+            <div class="result-message" id="resultMessage"></div>
+        </div>
+
+        <div class="history">
+            <h3 class="history-title">Spielverlauf</h3>
+            <div id="gameHistory"></div>
+        </div>
+    </div>
+
+    <script>
+        let balance = 10;
+        let gameHistory = [];
+        let promoCodeUsed = false;
+        
+        const symbols = ['🍒', '🍋', '🍇', '🍊', '🍎', '⭐', '💎', '🎰'];
+        
+        function updateBalance() {
+            document.getElementById('balance').textContent = balance.toLocaleString();
+        }
+
+        function applyPromoCode() {
+            const promoInput = document.getElementById('promoCode');
+            const promoMessage = document.getElementById('promoMessage');
+            
+            if (promoCodeUsed) {
+                promoMessage.innerHTML = '<div class="promo-message" style="background: rgba(255, 107, 107, 0.2);">Promo Code bereits verwendet!</div>';
+                return;
+            }
+            
+            if (promoInput.value.toUpperCase() === 'OLE777') {
+                balance += 1000000;
+                promoCodeUsed = true;
+                updateBalance();
+                promoMessage.innerHTML = '<div class="promo-message">🎉 Promo Code erfolgreich eingelöst! +€1.000.000 erhalten! 🎉</div>';
+                promoInput.value = '';
+                addToHistory('Promo Code OLE777 eingelöst', '+€1.000.000', 'win');
+            } else {
+                promoMessage.innerHTML = '<div class="promo-message" style="background: rgba(255, 107, 107, 0.2);">Ungültiger Promo Code!</div>';
+            }
+        }
+
+        function spin() {
+            const betAmount = parseInt(document.getElementById('betAmount').value);
+            const resultMessage = document.getElementById('resultMessage');
+            
+            if (betAmount > balance) {
+                resultMessage.innerHTML = '<span class="lose-message">Nicht genug Guthaben!</span>';
+                return;
+            }
+            
+            if (betAmount <= 0) {
+                resultMessage.innerHTML = '<span class="lose-message">Einsatz muss mindestens €1 betragen!</span>';
+                return;
+            }
+
+            // Deduct bet from balance
+            balance -= betAmount;
+            
+            // Animate reels
+            const reels = [document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3')];
+            reels.forEach(reel => {
+                reel.style.animation = 'none';
+                setTimeout(() => {
+                    reel.style.animation = 'spin 0.5s ease-in-out';
+                }, 10);
+            });
+
+            // Generate random symbols
+            setTimeout(() => {
+                const results = [];
+                for (let i = 0; i < 3; i++) {
+                    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                    results.push(symbol);
+                    reels[i].textContent = symbol;
+                }
+                
+                // Check for wins
+                let winAmount = 0;
+                let winMessage = '';
+                
+                if (results[0] === results[1] && results[1] === results[2]) {
+                    // Three of a kind
+                    if (results[0] === '💎') {
+                        winAmount = betAmount * 50;
+                        winMessage = 'JACKPOT! Drei Diamanten! 💎💎💎';
+                    } else if (results[0] === '⭐') {
+                        winAmount = betAmount * 20;
+                        winMessage = 'SUPER WIN! Drei Sterne! ⭐⭐⭐';
+                    } else if (results[0] === '🎰') {
+                        winAmount = betAmount * 10;
+                        winMessage = 'BIG WIN! Drei Slots! 🎰🎰🎰';
+                    } else {
+                        winAmount = betAmount * 5;
+                        winMessage = 'GEWINN! Drei gleiche Symbole!';
+                    }
+                } else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
+                    // Two of a kind
+                    winAmount = betAmount * 2;
+                    winMessage = 'Kleiner Gewinn! Zwei gleiche Symbole!';
+                } else {
+                    // No win
+                    winMessage = 'Kein Gewinn diesmal. Versuch es nochmal!';
+                }
+                
+                balance += winAmount;
+                updateBalance();
+                
+                if (winAmount > 0) {
+                    resultMessage.innerHTML = `<span class="win-message">${winMessage}<br>Gewinn: €${winAmount.toLocaleString()}</span>`;
+                    addToHistory(`Einsatz: €${betAmount}`, `+€${winAmount}`, 'win');
+                } else {
+                    resultMessage.innerHTML = `<span class="lose-message">${winMessage}</span>`;
+                    addToHistory(`Einsatz: €${betAmount}`, `-€${betAmount}`, 'lose');
+                }
+            }, 500);
+        }
+
+        function addToHistory(action, amount, type) {
+            const historyItem = {
+                action: action,
+                amount: amount,
+                type: type,
+                time: new Date().toLocaleTimeString()
+            };
+            
+            gameHistory.unshift(historyItem);
+            
+            // Keep only last 10 items
+            if (gameHistory.length > 10) {
+                gameHistory.pop();
+            }
+            
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyDiv = document.getElementById('gameHistory');
+            historyDiv.innerHTML = '';
+            
+            gameHistory.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <span>${item.time}</span> - 
+                    <span>${item.action}</span> - 
+                    <span style="color: ${item.type === 'win' ? '#4ecdc4' : '#ff6b6b'}">${item.amount}</span>
+                `;
+                historyDiv.appendChild(historyItem);
+            });
+        }
+
+        // Initialize
+        updateBalance();
+        
+        // Allow Enter key to spin
+        document.getElementById('betAmount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                spin();
+            }
+        });
+        
+        // Allow Enter key to apply promo code
+        document.getElementById('promoCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                applyPromoCode();
+            }
+        });
+    </script>
+</body>
+</html>
