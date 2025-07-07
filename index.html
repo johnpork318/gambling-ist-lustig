@@ -730,6 +730,197 @@
             const container = document.querySelector('.casino-container');
             container.style.boxShadow = `0 20px 60px rgba(0, 0, 0, 0.5), 0 0 ${40 + Math.random() * 20}px rgba(255, 215, 0, ${0.1 + Math.random() * 0.1})`;
         }, 2000);
+
+        // 🎮 CHEAT CODES - Für Entwickler-Console
+        window.cheatCodes = {
+            // Geld hinzufügen
+            addMoney: function(amount = 100000) {
+                balance += amount;
+                updateBalance();
+                createFloatingNumber(amount, true);
+                addToHistory('💰 CHEAT: Geld hinzugefügt', `+€${amount.toLocaleString()}`, 'win');
+                console.log(`💰 ${amount.toLocaleString()}€ hinzugefügt! Neues Guthaben: ${balance.toLocaleString()}€`);
+            },
+            
+            // Garantierter Gewinn beim nächsten Spin
+            guaranteeWin: function() {
+                window.nextSpinWin = true;
+                console.log('🎰 Nächster Spin wird garantiert gewinnen!');
+            },
+            
+            // Jackpot beim nächsten Spin
+            forceJackpot: function() {
+                window.nextSpinJackpot = true;
+                console.log('💎 Nächster Spin wird ein MEGA JACKPOT!');
+            },
+            
+            // Promo Code zurücksetzen
+            resetPromo: function() {
+                promoCodeUsed = false;
+                console.log('🎁 Promo Code zurückgesetzt! OLE777 kann wieder verwendet werden.');
+            },
+            
+            // Guthaben setzen
+            setBalance: function(amount) {
+                balance = amount;
+                updateBalance();
+                console.log(`💳 Guthaben auf ${amount.toLocaleString()}€ gesetzt!`);
+            },
+            
+            // Spielverlauf löschen
+            clearHistory: function() {
+                gameHistory = [];
+                updateHistoryDisplay();
+                console.log('🗑️ Spielverlauf gelöscht!');
+            },
+            
+            // Alle Cheats anzeigen
+            help: function() {
+                console.log(`
+🎮 CASINO CHEAT CODES:
+────────────────────────────────
+cheatCodes.addMoney(betrag)    - Geld hinzufügen (Standard: 100.000€)
+cheatCodes.guaranteeWin()      - Nächster Spin gewinnt garantiert
+cheatCodes.forceJackpot()      - Nächster Spin wird Mega Jackpot
+cheatCodes.resetPromo()        - Promo Code zurücksetzen
+cheatCodes.setBalance(betrag)  - Guthaben auf bestimmten Betrag setzen
+cheatCodes.clearHistory()      - Spielverlauf löschen
+cheatCodes.help()              - Diese Hilfe anzeigen
+
+💡 Beispiele:
+cheatCodes.addMoney(50000)     - 50.000€ hinzufügen
+cheatCodes.setBalance(999999)  - Guthaben auf 999.999€ setzen
+                `);
+            }
+        };
+
+        // Cheat-Funktionalität für garantierte Gewinne
+        const originalSpin = spin;
+        spin = function() {
+            if (isSpinning) return;
+            
+            const betAmount = parseInt(document.getElementById('betAmount').value);
+            const resultMessage = document.getElementById('resultMessage');
+            
+            if (betAmount > balance) {
+                resultMessage.innerHTML = '<span class="lose-message">❌ Nicht genug Guthaben!</span>';
+                return;
+            }
+            
+            if (betAmount <= 0) {
+                resultMessage.innerHTML = '<span class="lose-message">❌ Einsatz muss mindestens €1 betragen!</span>';
+                return;
+            }
+
+            isSpinning = true;
+            balance -= betAmount;
+            updateBalance();
+            createFloatingNumber(betAmount, false);
+            
+            // Clear previous win styling
+            const reels = [document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3')];
+            reels.forEach(reel => {
+                reel.classList.remove('winning');
+                reel.classList.add('spinning');
+            });
+
+            resultMessage.innerHTML = '<span style="color: #ffd700;">🎰 SPINNING...</span>';
+
+            // Simulate spinning with random symbols
+            const spinInterval = setInterval(() => {
+                reels.forEach(reel => {
+                    reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                });
+            }, 100);
+
+            setTimeout(() => {
+                clearInterval(spinInterval);
+                
+                let results = [];
+                
+                // Cheat Code Logic
+                if (window.nextSpinJackpot) {
+                    results = ['💎', '💎', '💎'];
+                    window.nextSpinJackpot = false;
+                    console.log('💎 CHEAT AKTIVIERT: Mega Jackpot!');
+                } else if (window.nextSpinWin) {
+                    // Garantierter Gewinn - zufällige Dreier
+                    const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                    results = [winSymbol, winSymbol, winSymbol];
+                    window.nextSpinWin = false;
+                    console.log('🎰 CHEAT AKTIVIERT: Garantierter Gewinn!');
+                } else {
+                    // Normale Logik
+                    for (let i = 0; i < 3; i++) {
+                        results.push(symbols[Math.floor(Math.random() * symbols.length)]);
+                    }
+                }
+                
+                // Set results on reels
+                for (let i = 0; i < 3; i++) {
+                    reels[i].textContent = results[i];
+                    reels[i].classList.remove('spinning');
+                }
+                
+                // Check for wins
+                let winAmount = 0;
+                let winMessage = '';
+                
+                if (results[0] === results[1] && results[1] === results[2]) {
+                    // Three of a kind
+                    reels.forEach(reel => reel.classList.add('winning'));
+                    
+                    if (results[0] === '💎') {
+                        winAmount = betAmount * 100;
+                        winMessage = '💎 MEGA JACKPOT! DREI DIAMANTEN! 💎';
+                        createConfetti();
+                    } else if (results[0] === '⭐') {
+                        winAmount = betAmount * 50;
+                        winMessage = '⭐ SUPER JACKPOT! DREI STERNE! ⭐';
+                        createConfetti();
+                    } else if (results[0] === '🎰') {
+                        winAmount = betAmount * 25;
+                        winMessage = '🎰 BIG WIN! DREI SLOTS! 🎰';
+                    } else {
+                        winAmount = betAmount * 10;
+                        winMessage = '🎉 GEWINN! DREI GLEICHE SYMBOLE! 🎉';
+                    }
+                } else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
+                    // Two of a kind
+                    winAmount = betAmount * 3;
+                    winMessage = '💰 Kleiner Gewinn! Zwei gleiche Symbole!';
+                } else {
+                    // No win
+                    winMessage = '😔 Kein Gewinn diesmal. Versuch es nochmal!';
+                }
+                
+                balance += winAmount;
+                updateBalance();
+                
+                if (winAmount > 0) {
+                    createFloatingNumber(winAmount, true);
+                    resultMessage.innerHTML = `<span class="win-message">${winMessage}<br>GEWINN: €${winAmount.toLocaleString()}</span>`;
+                    addToHistory(`💸 Einsatz: €${betAmount}`, `+€${winAmount}`, 'win');
+                } else {
+                    resultMessage.innerHTML = `<span class="lose-message">${winMessage}</span>`;
+                    addToHistory(`💸 Einsatz: €${betAmount}`, `-€${betAmount}`, 'lose');
+                }
+                
+                isSpinning = false;
+            }, 2000);
+        };
+
+        // Willkommensnachricht in der Console
+        console.log(`
+🎰 VIRTUAL CASINO - ENTWICKLER MODUS 🎰
+═══════════════════════════════════════
+Willkommen im Casino! Gib 'cheatCodes.help()' ein für alle verfügbaren Cheats.
+
+💡 Schnell-Cheats:
+- cheatCodes.addMoney()     // 100.000€ hinzufügen
+- cheatCodes.guaranteeWin() // Nächster Spin gewinnt
+- cheatCodes.forceJackpot() // Nächster Spin = Jackpot
+        `);
     </script>
 </body>
 </html>
